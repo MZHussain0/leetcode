@@ -1,16 +1,59 @@
 ﻿import { authModalState } from "@/atoms/authModalAtom";
-import { FC } from "react";
+import { auth } from "@/firebase/firebase";
+import { FC, useEffect, useState } from "react";
 import { useSetRecoilState } from "recoil";
+import { useCreateUserWithEmailAndPassword } from "react-firebase-hooks/auth";
+import { useRouter } from "next/router";
 
 interface SignupProps {}
 
 const Signup: FC<SignupProps> = ({}) => {
   const setAuthModalState = useSetRecoilState(authModalState);
+  const router = useRouter();
   const handleClick = (type: "login" | "register" | "forgotPassword") => {
     setAuthModalState((prev) => ({ ...prev, type: type }));
   };
+  const [inputs, setInputs] = useState({
+    email: "",
+    displayName: "",
+    password: "",
+  });
+
+  const [createUserWithEmailAndPassword, user, loading, error] =
+    useCreateUserWithEmailAndPassword(auth);
+
+  const handleChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputs((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
+  const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!inputs.email || !inputs.password || !inputs.displayName)
+      return alert("Please fill all the fields");
+    try {
+      const newUser = await createUserWithEmailAndPassword(
+        inputs.email,
+        inputs.password
+      );
+
+      if (!newUser) return;
+      router.push("/");
+    } catch (error: any) {
+      alert(error.message);
+    }
+  };
+
+  useEffect(() => {
+    if (error) {
+      alert(error.message);
+    }
+  }, [error]);
+
   return (
-    <form className="space-y-6 px-6 pb-4">
+    <form className="space-y-6 px-6 pb-4" onSubmit={handleRegister}>
       <h3 className="text-xl font-medium text-white">Register to LeetCode</h3>
       <div>
         <label
@@ -19,6 +62,7 @@ const Signup: FC<SignupProps> = ({}) => {
           Email
         </label>
         <input
+          onChange={handleChangeInput}
           type="email"
           id="email"
           name="email"
@@ -34,6 +78,7 @@ const Signup: FC<SignupProps> = ({}) => {
           Display Name
         </label>
         <input
+          onChange={handleChangeInput}
           type="displayName"
           id="displayName"
           name="displayName"
@@ -49,6 +94,7 @@ const Signup: FC<SignupProps> = ({}) => {
           Password
         </label>
         <input
+          onChange={handleChangeInput}
           type="password"
           id="password"
           name="password"
@@ -60,7 +106,7 @@ const Signup: FC<SignupProps> = ({}) => {
       <button
         type="submit"
         className="w-full focus:ring-blue-300 text-white font-medium text-sm px-5 py-2.5 text-center bg-brand-orange hover:bg-brand-orange-s rounded-lg">
-        Register
+        {loading ? "Registering..." : "Register"}
       </button>
       <div className="text-sm font-medium text-gray-300">
         Already have an account?{" "}
