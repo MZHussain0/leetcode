@@ -1,4 +1,5 @@
-﻿import { problems } from "@/mockProblems/problems";
+﻿import { firestore } from "@/firebase/firebase";
+import { collection, getDocs, orderBy, query } from "firebase/firestore";
 import Link from "next/link";
 import { FC, useEffect, useState } from "react";
 
@@ -6,14 +7,19 @@ import { AiFillYoutube } from "react-icons/ai";
 import { BsCheckCircle } from "react-icons/bs";
 import { IoClose } from "react-icons/io5";
 import YouTube from "react-youtube";
+import { DBProblem } from "../../utils/types/problem";
 
-interface ProblemsTableProps {}
+interface ProblemsTableProps {
+  setLoadingProblems: React.Dispatch<React.SetStateAction<boolean>>;
+}
 
-const ProblemsTable: FC<ProblemsTableProps> = ({}) => {
+const ProblemsTable: FC<ProblemsTableProps> = ({ setLoadingProblems }) => {
   const [youtubePlayer, setYoutubePlayer] = useState({
     isOpen: false,
     videoId: "",
   });
+
+  const problems = useGetProblems(setLoadingProblems);
 
   const closeModal = () => {
     setYoutubePlayer({ isOpen: false, videoId: "" });
@@ -108,3 +114,30 @@ const ProblemsTable: FC<ProblemsTableProps> = ({}) => {
 };
 
 export default ProblemsTable;
+
+// react hook for fetching problem from firestore
+function useGetProblems(
+  setLoadingProblems: React.Dispatch<React.SetStateAction<boolean>>
+) {
+  const [problems, setProblems] = useState<DBProblem[]>([]);
+
+  useEffect(() => {
+    setLoadingProblems(true);
+    const getProblems = async () => {
+      const q = query(
+        collection(firestore, "problems"),
+        orderBy("order", "asc")
+      );
+      const querySnapshot = await getDocs(q);
+      const temp: DBProblem[] = [];
+      querySnapshot.forEach((doc) => {
+        temp.push({ ...doc.data(), id: doc.id } as DBProblem);
+      });
+      setProblems(temp);
+      setLoadingProblems(false);
+    };
+    getProblems();
+  }, [setLoadingProblems]);
+
+  return problems;
+}
