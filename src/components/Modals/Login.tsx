@@ -3,6 +3,7 @@ import { auth } from "@/firebase/firebase";
 import { useRouter } from "next/router";
 import { FC, useEffect, useState } from "react";
 import { useSignInWithEmailAndPassword } from "react-firebase-hooks/auth";
+import { toast } from "react-toastify";
 import { useSetRecoilState } from "recoil";
 
 interface LoginProps {}
@@ -42,13 +43,25 @@ const Login: FC<LoginProps> = ({}) => {
   useEffect(() => {
     if (error) {
       if (error.code === "auth/user-not-found") {
-        alert("User not found");
+        toast.error("User not found", {
+          position: "top-center",
+          autoClose: 3000,
+          theme: "dark",
+        });
       }
       if (error.code === "auth/wrong-password") {
-        alert("Wrong password");
+        toast.error("Wrong Password", {
+          position: "top-center",
+          autoClose: 3000,
+          theme: "dark",
+        });
       }
       if (error.code === "auth/too-many-requests") {
-        alert("Too many requests");
+        toast.error("Too many requests", {
+          position: "top-center",
+          autoClose: 3000,
+          theme: "dark",
+        });
       }
     }
   }, [error]);
