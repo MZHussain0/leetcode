@@ -1,17 +1,21 @@
-﻿import { FC } from "react";
+﻿import { FC, useState } from "react";
 import PreferenceNav from "./PreferenceNav/PreferenceNav";
 import Split from "react-split";
 import CodeMirror from "@uiw/react-codemirror";
 import { vscodeDark } from "@uiw/codemirror-theme-vscode";
 import { javascript } from "@codemirror/lang-javascript";
 import EditorFooter from "./EditorFooter/EditorFooter";
+import { Problem } from "@/utils/types/problem";
 
-interface PlaygroundProps {}
+interface PlaygroundProps {
+  problem: Problem;
+}
 
-const Playground: FC<PlaygroundProps> = ({}) => {
+const Playground: FC<PlaygroundProps> = ({ problem }) => {
+  const [activeTestcaseId, setActiveTestcaseId] = useState(0);
   return (
     <>
-      <div className="flex flex-col bg-dark-layer-1 relative">
+      <div className="flex flex-col bg-dark-layer-1 relative overflow-x-hidden">
         <PreferenceNav />
 
         <Split
@@ -21,7 +25,7 @@ const Playground: FC<PlaygroundProps> = ({}) => {
           minSize={60}>
           <div className="w-full overflow-auto">
             <CodeMirror
-              value="const a = 1;"
+              value={problem.starterCode}
               theme={vscodeDark}
               extensions={[javascript()]}
               style={{ fontSize: 18 }}
@@ -39,41 +43,34 @@ const Playground: FC<PlaygroundProps> = ({}) => {
             </div>
 
             <div className="flex">
-              {/* test case 1 */}
-              <div className="items-start mr-2 mt-2 text-white">
-                <div className="flex flex-wrap items-center gap-y-4">
-                  <div className="font-medium transition-all focus:outline-none inline-flex bg-dark-fill-3 hover:bg-dark-fill-2 relative rounded-lg px-4 py-1 cursor-pointer whitespace-nowrap">
-                    Case 1
+              {problem.examples.map((example, index) => (
+                <div
+                  key={example.id}
+                  onClick={() => setActiveTestcaseId(index)}
+                  className="items-start mr-2 mt-2 text-white">
+                  <div className="flex flex-wrap items-center gap-y-4">
+                    <div
+                      className={`font-medium transition-all focus:outline-none inline-flex bg-dark-fill-3 hover:bg-dark-fill-2 relative rounded-lg px-4 py-1 cursor-pointer whitespace-nowrap ${
+                        activeTestcaseId === index
+                          ? "text-brand-orange"
+                          : "text-gray-500"
+                      } `}>
+                      Case {index + 1}
+                    </div>
                   </div>
                 </div>
-              </div>
-              {/* Test case 2  */}
-              <div className="items-start mr-2 mt-2 text-white">
-                <div className="flex flex-wrap items-center gap-y-4">
-                  <div className="font-medium transition-all focus:outline-none inline-flex bg-dark-fill-3 hover:bg-dark-fill-2 relative rounded-lg px-4 py-1 cursor-pointer whitespace-nowrap">
-                    Case 2
-                  </div>
-                </div>
-              </div>
-              {/* Test case 3  */}
-              <div className="items-start mr-2 mt-2 text-white">
-                <div className="flex flex-wrap items-center gap-y-4">
-                  <div className="font-medium transition-all focus:outline-none inline-flex bg-dark-fill-3 hover:bg-dark-fill-2 relative rounded-lg px-4 py-1 cursor-pointer whitespace-nowrap">
-                    Case 3
-                  </div>
-                </div>
-              </div>
+              ))}
             </div>
 
             <div className="font-semibold my-4">
               <p className="text-sm font-medium mt-4 text-white">Input: </p>
               <div className="w-full cursor-text rounded-lg px-3 py-[10px] bg-dark-fill-3 border-transparent text-white mt-2">
-                nums: [5,7,11,15,19], target: 9
+                {problem.examples[activeTestcaseId].inputText}
               </div>
 
               <p className="text-sm font-medium mt-4 text-white">Output: </p>
               <div className="w-full cursor-text rounded-lg px-3 py-[10px] bg-dark-fill-3 border-transparent text-white mt-2">
-                [0,1]
+                {problem.examples[activeTestcaseId].outputText}
               </div>
             </div>
           </div>
