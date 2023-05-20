@@ -10,8 +10,6 @@ interface problemPageProps {
 }
 
 const problemPage: FC<problemPageProps> = ({ problem }) => {
-  console.log(problem);
-
   return (
     <div>
       <Topbar problemPage />

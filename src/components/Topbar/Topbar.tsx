@@ -79,7 +79,7 @@ const Topbar: FC<TopbarProps> = ({ problemPage }) => {
               </Link>
             )}
 
-            {problemPage && <Timer />}
+            {user && problemPage && <Timer />}
             {user && (
               <div className="cursor-pointer group relative">
                 <Image
